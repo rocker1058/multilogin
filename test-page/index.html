@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Post de prueba QA</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 640px;
+      margin: 40px auto;
+      padding: 0 16px;
+      color: #1a1a1a;
+      background: #fafafa;
+    }
+    .post {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .post h1 { font-size: 1.5rem; margin: 0 0 12px; }
+    .post p { line-height: 1.5; color: #333; }
+    .comments { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 20px; }
+    .comments h2 { font-size: 1.1rem; margin-top: 0; }
+    #comment-list { list-style: none; padding: 0; margin: 0 0 16px; }
+    #comment-list li {
+      border-top: 1px solid #eee;
+      padding: 10px 0;
+      line-height: 1.4;
+    }
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      resize: vertical;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      background: #2563eb;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover { background: #1d4ed8; }
+    .empty { color: #888; font-style: italic; }
+  </style>
+</head>
+<body>
+  <!-- Post simulado -->
+  <article class="post">
+    <h1>Post de prueba QA</h1>
+    <p>
+      Este es el contenido de un post de ejemplo usado únicamente para pruebas
+      de automatización en un entorno local y autorizado. Aquí no hay
+      interacción con plataformas de terceros: todo ocurre en tu propia máquina.
+    </p>
+  </article>
+
+  <!-- Sección de comentarios -->
+  <section class="comments">
+    <h2>Comentarios</h2>
+    <ul id="comment-list">
+      <li class="empty" id="empty-msg">Aún no hay comentarios. ¡Sé el primero!</li>
+    </ul>
+
+    <textarea data-testid="comment-input" id="comment-input" rows="3" placeholder="Escribe un comentario..."></textarea>
+    <button data-testid="comment-submit" id="comment-submit">Comentar</button>
+  </section>
+
+  <script>
+    // JavaScript de la propia página. Simula un hilo de comentarios con
+    // respuestas anidadas. Marca los elementos con data-testid para que la
+    // automatización (comment.js / reply.js) los localice de forma estable.
+    const input = document.getElementById("comment-input");
+    const submit = document.getElementById("comment-submit");
+    const list = document.getElementById("comment-list");
+
+    function removeEmptyMsg() {
+      const emptyMsg = document.getElementById("empty-msg");
+      if (emptyMsg) emptyMsg.remove();
+    }
+
+    // Crea el bloque de un comentario con su UI de respuesta.
+    function createComment(text) {
+      const li = document.createElement("li");
+      li.className = "comment";
+      li.setAttribute("data-testid", "comment");
+
+      const textEl = document.createElement("span");
+      textEl.setAttribute("data-testid", "comment-text");
+      textEl.textContent = text;
+      li.appendChild(textEl);
+
+      // Botón "Responder"
+      const replyBtn = document.createElement("button");
+      replyBtn.setAttribute("data-testid", "reply-btn");
+      replyBtn.textContent = "Responder";
+      li.appendChild(replyBtn);
+
+      // Contenedor de respuestas
+      const replyList = document.createElement("ul");
+      replyList.className = "reply-list";
+      li.appendChild(replyList);
+
+      // Formulario de respuesta (oculto hasta pulsar "Responder")
+      const replyForm = document.createElement("div");
+      replyForm.className = "reply-form";
+      replyForm.style.display = "none";
+
+      const replyInput = document.createElement("textarea");
+      replyInput.setAttribute("data-testid", "reply-input");
+      replyInput.rows = 2;
+      replyInput.placeholder = "Escribe una respuesta...";
+
+      const replySubmit = document.createElement("button");
+      replySubmit.setAttribute("data-testid", "reply-submit");
+      replySubmit.textContent = "Responder";
+
+      replyForm.appendChild(replyInput);
+      replyForm.appendChild(replySubmit);
+      li.appendChild(replyForm);
+
+      replyBtn.addEventListener("click", () => {
+        replyForm.style.display = "block";
+        replyInput.focus();
+      });
+
+      replySubmit.addEventListener("click", () => {
+        const rtext = replyInput.value.trim();
+        if (!rtext) return;
+        const rli = document.createElement("li");
+        rli.setAttribute("data-testid", "reply");
+        rli.textContent = rtext;
+        replyList.appendChild(rli);
+        replyInput.value = "";
+      });
+
+      return li;
+    }
+
+    submit.addEventListener("click", () => {
+      const text = input.value.trim();
+      if (!text) return;
+
+      removeEmptyMsg();
+      list.appendChild(createComment(text));
+
+      input.value = "";
+      input.focus();
+    });
+  </script>
+</body>
+</html>
